@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FiEdit } from "react-icons/fi";
 import { RiDeleteBack2Line } from "react-icons/ri";
+import axios from 'axios';
 
 const TodoList = () => {
   const [inputData, setInputData] = useState("");
@@ -8,12 +9,20 @@ const TodoList = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [customIndex, setCustomIndex] = useState(null);
 
-  useEffect(() => {
-    // console.log(Array.isArray(value), "this was the array : ", value);
-    // console.log("itemIndex;", itemIndex);
-    // console.log("your index::", customIndex);
-  }, []);
+  const API_URL = "http://localhost:5000/api/todos"; // Backend API URL
 
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const response = await axios.get(API_URL); // Await the response
+        setValue(response.data); // Set value with response data
+        console.log(typeof response.data, 'the data-', response.data); // Log the data
+      } catch (err) {
+        console.log('got some err', err.message);
+      }
+    };
+    getData();
+  }, []);
   const handleOnchange = (e) => {
     setInputData(e.target.value);
   };
@@ -88,7 +97,7 @@ const TodoList = () => {
                 className="flex justify-between items-center py-2 border-b border-gray-600 line-clamp-1 text-nowrap "
               >
                 <span className="text-white">
-                  {index + 1}. {data}
+                  {index + 1}. {data.task}
                 </span>
                 <div>
                   <button
