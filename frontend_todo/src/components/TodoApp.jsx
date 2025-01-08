@@ -32,15 +32,16 @@ const TodoList = () => {
         const response = await axios.put(`${API_URL}/${value[editingIndex]._id}`, {
           task: inputData,
         });
-        const updatedTodos = [...value];
-        updatedTodos[editingIndex] = response.data;
-        setValue(updatedTodos);
+        // const updatedTodos = [...value];
+        // updatedTodos[editingIndex] = response.data;
+        setValue((prev) => prev.map((data, index) => index === editingIndex ? response.data : data));
+                                                   
+        // let new = []
+        
         setInputData("");
         setIsEdit(false);
 
-        //  const updatedArr = value.map((item, index) =>
-        //   index === editingIndex ? inputData : item
-        // );
+        //  const updatedArr = value.map((item, index) => item[editingIndex]? = input : item);
 
       } catch (error) {
         console.log(error.message, "---", error);
