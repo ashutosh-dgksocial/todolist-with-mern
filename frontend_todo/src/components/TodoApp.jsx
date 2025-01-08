@@ -1,66 +1,89 @@
 import { useEffect, useState } from "react";
 import { FiEdit } from "react-icons/fi";
 import { RiDeleteBack2Line } from "react-icons/ri";
-import axios from 'axios';
+import axios from "axios";
 
 const TodoList = () => {
   const [inputData, setInputData] = useState("");
   const [value, setValue] = useState([]);
   const [isEdit, setIsEdit] = useState(false);
-  const [customIndex, setCustomIndex] = useState(null);
+  const [editingIndex, setEditingIndex] = useState(null);
 
   const API_URL = "http://localhost:5000/api/todos"; // Backend API URL
 
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await axios.get(API_URL); // Await the response
+        const response = await axios.get(API_URL);
         setValue(response.data); // Set value with response data
-        console.log(typeof response.data, 'the data-', response.data); // Log the data
       } catch (err) {
-        console.log('got some err', err.message);
+        console.log("got some err", err.message);
       }
     };
     getData();
   }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (inputData.trim() === "") return;
+
+    if (isEdit) {
+      try {
+        const response = await axios.put(`${API_URL}/${value[editingIndex]._id}`, {
+          task: inputData,
+        });
+        const updatedTodos = [...value];
+        updatedTodos[editingIndex] = response.data;
+        setValue(updatedTodos);
+        setInputData("");
+        setIsEdit(false);
+
+        //  const updatedArr = value.map((item, index) =>
+        //   index === editingIndex ? inputData : item
+        // );
+
+      } catch (error) {
+        console.log(error.message, "---", error);
+      }
+    } else {
+      try {
+        const response = await axios.post(API_URL, {
+          task: inputData,
+          completed: true,
+        });
+        // console.log(response.data);
+        setValue([...value, response.data]);
+        setInputData("");
+      } catch (error) {
+        console.log(error.message, "---", error);
+      }
+    }
+  };
+
   const handleOnchange = (e) => {
     setInputData(e.target.value);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (inputData.trim() === "") {
-      return;
-    }
-
-    if (isEdit) {
-      const updatedArr = value.map((item, index) =>
-        index === customIndex ? inputData : item
-      );
-      // so this is easy we are assigning user input string to the updatedArr if the condition is true;
-      setValue(updatedArr);
-      setInputData("");
-      setIsEdit(false);
-    } else {
-      setValue([...value, inputData]);
-      setInputData("");
-    }
-  };
-
-  const handleEdit = (index) => {
-    setCustomIndex(index);
-    const foundItem = value[index]; // this is console the the key not the value not the index
-    setInputData(foundItem);
+  const handleEdit = (itemIndex) => {
+    setEditingIndex(itemIndex);
+    setInputData(value[itemIndex].task);
+    // console.log("potato", value[itemIndex].task);
     setIsEdit(true);
   };
 
-  const handleDelete = (itemIndex) => {
-    const filteredData = value.filter((item, index) => {
-      return index !== itemIndex
-    });
-    setValue(filteredData);
-  }
+  const handleDelete = async (itemIndex) => {
+    try {
+      const response = axios.delete(`${API_URL}/${value[itemIndex]._id}`);
+      // console.log(response.message);
+
+      const filteredData = value.filter((_, index) => {
+        return index !== itemIndex;
+      });
+      setValue(filteredData);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div className="max-w-md mx-auto p-4 bg-gray-800 rounded-lg shadow-md">
